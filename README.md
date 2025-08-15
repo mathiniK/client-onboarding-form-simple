@@ -1,36 +1,159 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Client Onboarding – Next.js + React Hook Form + Zod
 
-## Getting Started
+A small client onboarding form built with **Next.js App Router**, **React Hook Form**, and **Zod**.  
+Validates inputs on the client and POSTs JSON to an **external** endpoint (no local API routes).
 
-First, run the development server:
+---
 
+## 1) Requirements
+- Node.js **18+**
+- npm (bundled with Node)
+
+---
+
+## 2) Setup
+
+### A) Install dependencies
 ```bash
+npm i
+B) Environment variable
+Create .env.local at the project root:
+
+env
+Copy
+Edit
+NEXT_PUBLIC_ONBOARD_URL=https://example.com/api/onboard
+C) Tailwind CSS v4 wiring
+postcss.config.mjs
+
+js
+Copy
+Edit
+/** @type {import('postcss-load-config').Config} */
+const config = {
+  plugins: { '@tailwindcss/postcss': {} },
+};
+export default config;
+src/app/globals.css
+
+css
+Copy
+Edit
+@import "tailwindcss";
+
+/* Light background */
+html, body { background-color: #fff; color: #111; }
+src/app/layout.tsx
+
+tsx
+Copy
+Edit
+import "./globals.css";
+
+export const metadata = { title: "Client Onboarding", description: "Form" };
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+D) Run locally
+bash
+Copy
+Edit
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+# Open http://localhost:3000
+E) Build & start (production)
+bash
+Copy
+Edit
+npm run build
+npm start
+3) Fields & Validation (Zod + RHF)
+Field	Type	Rules
+fullName	string	required; 2–80 chars; letters/spaces/’/- only
+email	string	required; valid email
+companyName	string	required; 2–100 chars
+services	string[]	required; ≥1 from: UI/UX, Branding, Web Dev, Mobile App
+budgetUsd	number?	optional; integer 100–1,000,000
+projectStartDate	date str	required; today or later
+acceptTerms	boolean	required; must be checked
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Zod schema: src/lib/validation.ts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+RHF:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ts
+Copy
+Edit
+useForm({ resolver: zodResolver(onboardingSchema), mode: "onTouched" })
+Budget normalization:
 
-## Learn More
+ts
+Copy
+Edit
+register("budgetUsd", { setValueAs: v => (v === "" ? undefined : Number(v)) })
+Inline errors via formState.errors.<field>.message
 
-To learn more about Next.js, take a look at the following resources:
+4) Submit Behavior
+Endpoint: process.env.NEXT_PUBLIC_ONBOARD_URL
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Method: POST
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Headers: Content-Type: application/json
 
-## Deploy on Vercel
+Body: validated form data (no files)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+On success: show success message with submitted summary
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+On error: show top-level error message
+
+Example request body:
+
+json
+Copy
+Edit
+{
+  "fullName": "Ada Lovelace",
+  "email": "ada@example.com",
+  "companyName": "Analytical Engines Ltd",
+  "services": ["UI/UX", "Web Dev"],
+  "budgetUsd": 50000,
+  "projectStartDate": "2025-09-01",
+  "acceptTerms": true
+}
+5) UX & Accessibility
+Labels tied to inputs; visible focus states; keyboard navigable
+
+Services displayed as multi-select checkboxes
+
+Submit disabled while submitting; form values persist on validation errors
+
+Inline error text under each input
+
+Native date input
+
+6) Bonus (Prefill Services from Query Params)
+Example:
+
+?service=UI%2FUX
+
+?services=Web%20Dev&services=Branding
+
+Logic in src/lib/prefills.ts
+
+7) Scripts
+bash
+Copy
+Edit
+npm run dev     # start dev server
+npm run build   # production build
+npm start       # start production server
+npm run lint    # lint
+npm run test    # run tests (if present)
+8) Troubleshooting
+VS Code warning: “Unknown at rule @tailwind / @apply” → install Tailwind CSS IntelliSense or set "css.lint.unknownAtRules": "ignore" in settings.
+
+Hydration mismatch: Browser extensions may inject attributes before React hydration → test in a private window or disable extensions during development.
