@@ -1,0 +1,4 @@
+{
+  "deepscan.ignoreConfirmWarning": true,
+  "css.lint.unknownAtRules": "ignore"
+}
