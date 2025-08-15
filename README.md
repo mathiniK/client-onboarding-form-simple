@@ -71,7 +71,7 @@ npm run dev
 - **Email:** Required, valid email format
 - **Company Name:** Required, 2-100 characters
 - **Services:** Required, multi-select from UI/UX, Branding, Web Dev, Mobile App
-- **Budget:** Optional, $100-$1,000,000 range
+- **Budget(USD):** Optional; integer between 100–1,000,000
 - **Project Start Date:** Required, today or later
 - **Terms:** Required checkbox
   
@@ -93,5 +93,5 @@ npm run dev     # Development server
 npm run build   # Production build
 npm start       # Production server
 npm run lint    # Lint code
-npm run test    #To run tests
+npm run test    # To run tests
 ```
