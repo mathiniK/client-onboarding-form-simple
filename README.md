@@ -74,7 +74,7 @@ npm run dev
 - **Budget:** Optional, $100-$1,000,000 range
 - **Project Start Date:** Required, today or later
 - **Terms:** Required checkbox
-- 
+  
 - Zod validates, zodResolver plugs it into React Hook Form, you read error messages from formState.errors, and you normalize the optional number with setValueAs
 
 ## Features
